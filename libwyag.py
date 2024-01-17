@@ -113,12 +113,22 @@ def repo_default_config():
     ret = configparser.ConfigParser()
 
     ret.add_section("core")
-    ret.set("core", "repositoryformatversion", "0")
-    ret.set("core", "filemode", "false")
-    ret.set("core", "bare", "false")
+    ret.set("core", "repositoryformatversion", "0") # initial format
+    ret.set("core", "filemode", "false")    # donot record file permission changes in the work tree
+    ret.set("core", "bare", "false")    # indicates that the repository has a worktree
 
     return ret
 
+argsp = argsubparsers.add_parser("init", help="Initialize a new, empty repository.")
+
+argsp.add_argument("path",
+                   metavar="directory",
+                   nargs="?",
+                   default=".",
+                   help="Where to create the repository.")
+
+def cmd_init(args):
+    repo_create(args.path)
 
 def main(argv=sys.argv[1:]):
     args = argparser.parse_args(argv)
