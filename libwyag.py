@@ -245,6 +245,17 @@ argsp.add_argument("object",
                    metavar="object",
                    help="The object to display")
 
+def cmd_cat_file(args):
+    repo = repo_find()
+    cat_file(repo, args.object, fmt=args.type.encode())
+
+def cat_file(repo, obj, fmt=None):
+    obj = object_read(repo, object_find(repo, obj, fmt=fmt))
+    sys.stdout.buffer.write(obj.serialize())
+
+def object_find(repo, name, fmt=None, follow=True):
+    return name
+
 def main(argv=sys.argv[1:]):
     args = argparser.parse_args(argv)
     match args.command:
