@@ -39,7 +39,7 @@ def init(repo):
     os.mkdir(os.path.join(repo, '.git'))
     for name in ['objects', 'refs', 'refs/heads']:
         os.mkdir(os.path.join(repo, '.git', name))
-    write_file(os.path.join(repo, '.git', 'HEAD'), b'ref: refs/heads/master')
+    write_file(os.path.join(repo, '.git', 'HEAD'), b'ref: refs/heads/main')
     print('initialized empty repository: {}'.format(repo))
 
 
@@ -273,21 +273,21 @@ def write_tree():
     return hash_object(b''.join(tree_entries), 'tree')
 
 
-def get_local_master_hash():
-    """Get current commit hash (SHA-1 string) of local master branch."""
-    master_path = os.path.join('.git', 'refs', 'heads', 'master')
+def get_local_main_hash():
+    """Get current commit hash (SHA-1 string) of local main branch."""
+    main_path = os.path.join('.git', 'refs', 'heads', 'main')
     try:
-        return read_file(master_path).decode().strip()
+        return read_file(main_path).decode().strip()
     except FileNotFoundError:
         return None
 
 
 def commit(message, author=None):
-    """Commit the current state of the index to master with given message.
+    """Commit the current state of the index to main with given message.
     Return hash of commit object.
     """
     tree = write_tree()
-    parent = get_local_master_hash()
+    parent = get_local_main_hash()
     if author is None:
         author = '{} <{}>'.format(
                 os.environ['GIT_AUTHOR_NAME'], os.environ['GIT_AUTHOR_EMAIL'])
@@ -308,9 +308,9 @@ def commit(message, author=None):
     lines.append('')
     data = '\n'.join(lines).encode()
     sha1 = hash_object(data, 'commit')
-    master_path = os.path.join('.git', 'refs', 'heads', 'master')
-    write_file(master_path, (sha1 + '\n').encode())
-    print('committed to master: {:7}'.format(sha1))
+    main_path = os.path.join('.git', 'refs', 'heads', 'main')
+    write_file(main_path, (sha1 + '\n').encode())
+    print('committed to main: {:7}'.format(sha1))
     return sha1
 
 
@@ -354,8 +354,8 @@ def http_request(url, username, password, data=None):
     return f.read()
 
 
-def get_remote_master_hash(git_url, username, password):
-    """Get commit hash of remote master branch, return SHA-1 hex string or
+def get_remote_main_hash(git_url, username, password):
+    """Get commit hash of remote main branch, return SHA-1 hex string or
     None if no remote commits.
     """
     url = git_url + '/info/refs?service=git-receive-pack'
@@ -365,10 +365,10 @@ def get_remote_master_hash(git_url, username, password):
     assert lines[1] == b''
     if lines[2][:40] == b'0' * 40:
         return None
-    master_sha1, master_ref = lines[2].split(b'\x00')[0].split()
-    assert master_ref == b'refs/heads/master'
-    assert len(master_sha1) == 40
-    return master_sha1.decode()
+    main_sha1, main_ref = lines[2].split(b'\x00')[0].split()
+    assert main_ref == b'refs/heads/main'
+    assert len(main_sha1) == 40
+    return main_sha1.decode()
 
 
 def read_tree(sha1=None, data=None):
@@ -465,18 +465,18 @@ def create_pack(objects):
 
 
 def push(git_url, username=None, password=None):
-    """Push master branch to given git repo URL."""
+    """Push main branch to given git repo URL."""
     if username is None:
         username = os.environ['GIT_USERNAME']
     if password is None:
         password = os.environ['GIT_PASSWORD']
-    remote_sha1 = get_remote_master_hash(git_url, username, password)
-    local_sha1 = get_local_master_hash()
+    remote_sha1 = get_remote_main_hash(git_url, username, password)
+    local_sha1 = get_local_main_hash()
     missing = find_missing_objects(local_sha1, remote_sha1)
-    print('updating remote master from {} to {} ({} object{})'.format(
+    print('updating remote main from {} to {} ({} object{})'.format(
             remote_sha1 or 'no commits', local_sha1, len(missing),
             '' if len(missing) == 1 else 's'))
-    lines = ['{} {} refs/heads/master\x00 report-status'.format(
+    lines = ['{} {} refs/heads/main\x00 report-status'.format(
             remote_sha1 or ('0' * 40), local_sha1).encode()]
     data = build_lines_data(lines) + create_pack(missing)
     url = git_url + '/git-receive-pack'
@@ -486,8 +486,8 @@ def push(git_url, username=None, password=None):
         'expected at least 2 lines, got {}'.format(len(lines))
     assert lines[0] == b'unpack ok\n', \
         "expected line 1 b'unpack ok', got: {}".format(lines[0])
-    assert lines[1] == b'ok refs/heads/master\n', \
-        "expected line 2 b'ok refs/heads/master\n', got: {}".format(lines[1])
+    assert lines[1] == b'ok refs/heads/main\n', \
+        "expected line 2 b'ok refs/heads/main\n', got: {}".format(lines[1])
     return (remote_sha1, missing)
 
 
@@ -511,7 +511,7 @@ if __name__ == '__main__':
             help='SHA-1 hash (or hash prefix) of object to display')
 
     sub_parser = sub_parsers.add_parser('commit',
-            help='commit current state of index to master branch')
+            help='commit current state of index to main branch')
     sub_parser.add_argument('-a', '--author',
             help='commit author in format "A U Thor <author@example.com>" '
                  '(uses GIT_AUTHOR_NAME and GIT_AUTHOR_EMAIL environment '
@@ -546,7 +546,7 @@ if __name__ == '__main__':
                  'addition to path')
 
     sub_parser = sub_parsers.add_parser('push',
-            help='push master branch to given git server URL')
+            help='push main branch to given git server URL')
     sub_parser.add_argument('git_url',
             help='URL of git repo, eg: https://github.com/benhoyt/pygit.git')
     sub_parser.add_argument('-p', '--password',
