@@ -1,6 +1,8 @@
 """Implement just enough git to commit and push to GitHub.
 """
 
+# I added a new comment as a change.
+
 import argparse, collections, difflib, enum, hashlib, operator, os, stat
 import struct, sys, time, urllib.request, zlib
 
