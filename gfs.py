@@ -290,7 +290,8 @@ def commit(message, author=None):
     parent = get_local_main_hash()
     if author is None:
         author = '{} <{}>'.format(
-                os.environ['GIT_AUTHOR_NAME'], os.environ['GIT_AUTHOR_EMAIL'])
+                os.environ['GIT_AUTHOR_NAME'], os.environ['GIT_AUTHOR_EMAIL'])	# run in terminal to set the env variables: export GIT_AUTHOR_NAME="Your Name" export GIT_AUTHOR_EMAIL="your.email@example.com"
+
     timestamp = int(time.mktime(time.localtime()))
     utc_offset = -time.timezone
     author_time = '{} {}{:02}{:02}'.format(
